@@ -25,9 +25,17 @@ streamlit run streamlit_app.py
 
 ## How It Works
 
-1. Upload one resume file and one JD file.
-2. Click `Generate Tailored Resume`.
-3. Download the tailored output.
+1. Upload your resume file from local system (`.pdf`, `.docx`, `.txt`, `.md`, `.html`, `.htm`).
+2. Paste the target JD text in the job description box.
+3. Keep `Require OpenAI rewrite` enabled if you want strict model-based tailoring.
+4. Click `Generate Tailored Resume`.
+5. Download the tailored output.
 
-Supported input formats: `.txt`, `.md`, `.html`, `.htm`, `.pdf`  
-Output preserves extension for `.txt`, `.md`, `.html`, `.htm`; PDF currently outputs `.txt`.
+Output format follows the uploaded resume extension when supported.  
+If a writer dependency is missing, app falls back to `.txt`.
+
+Notes:
+- If `OPENAI_API_KEY` is missing/unavailable, app uses heuristic mode.
+- Heuristic mode now always adds a visible `Targeted JD Alignment` section so output is not identical to input.
+- For `.docx`, the app reuses the uploaded document structure to preserve heading/font styles.
+- For `.pdf`, the app now generates a tailored-only PDF using the original page size and style cues.
