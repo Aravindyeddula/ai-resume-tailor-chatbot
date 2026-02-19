@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agentic RAG Web App</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --ink: #12233a;
+      --sub: #4c5c72;
+      --line: #d9e1ec;
+      --accent: #1363df;
+      --accent-soft: #e8f0ff;
+    }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 20px;
+      color: var(--ink);
+      background: linear-gradient(135deg, #eef4ff 0%, #f8fafc 60%, #f1fff8 100%);
+    }
+    .wrap { width: min(98vw, 1900px); margin: 0 auto; padding: 18px 12px 36px; }
+    h1 { margin: 0 0 10px; font-size: 52px; }
+    p { margin: 0; color: var(--sub); font-size: 24px; }
+
+    .workspace { margin-top: 18px; }
+    .workspace:not(.has-question) {
+      min-height: calc(100vh - 210px);
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 90px;
+    }
+    .workspace.has-question {
+      display: grid;
+      grid-template-columns: minmax(420px, 520px) minmax(900px, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .inputs {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(340px, 440px));
+      gap: 16px;
+      justify-content: center;
+    }
+    .workspace.has-question .inputs { grid-template-columns: 1fr; }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 6px 20px rgba(18, 35, 58, 0.06);
+    }
+
+    h2 { margin: 0 0 10px; font-size: 36px; }
+    .upload-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .info-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      background: #f0f5ff;
+      color: #1b4ca1;
+      font-weight: 700;
+      cursor: help;
+      font-size: 18px;
+      line-height: 1;
+      user-select: none;
+    }
+    .tooltip {
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      position: absolute;
+      top: 34px;
+      right: 0;
+      width: 320px;
+      background: #0d1b2a;
+      color: #f3f7ff;
+      font-size: 15px;
+      line-height: 1.35;
+      border-radius: 8px;
+      padding: 10px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+      z-index: 20;
+    }
+    .info-wrap:hover .tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    input, textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    button {
+      border: 0;
+      background: var(--accent);
+      color: white;
+      padding: 13px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 24px;
+    }
+
+    .latest { margin-top: 14px; }
+    .workspace.has-question .latest { margin-top: 0; }
+
+    .result {
+      margin: 10px 0 0;
+      background: #f8fbff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 24px;
+      line-height: 1.55;
+      white-space: normal;
+    }
+    .label {
+      color: var(--sub);
+      font-size: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-top: 10px;
+    }
+
+    ul, ol { margin: 6px 0 0; padding-left: 18px; }
+    li { margin-bottom: 4px; }
+    .mono { font-family: Consolas, "Courier New", monospace; font-size: 20px; }
+    .hint {
+      background: var(--accent-soft);
+      border: 1px dashed #b6ccff;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-top: 10px;
+      font-size: 20px;
+      color: #284672;
+    }
+    @media (max-width: 1400px) {
+      .inputs { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+      .workspace:not(.has-question) { min-height: auto; }
+    }
+    @media (max-width: 1100px) {
+      .workspace.has-question { grid-template-columns: 1fr; }
+      .workspace:not(.has-question) { display: block; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <h1>Agentic RAG Web App</h1>
+    <p>Upload files, ask grounded questions with citations, and write selective memory.</p>
+
+    <div class="workspace {% if state.question %}has-question{% endif %}">
+      <section class="inputs">
+        <article class="card">
+          <div class="upload-header">
+            <h2>1) Upload Documents</h2>
+            <div class="info-wrap">i
+              <div class="tooltip">
+                Suitable file formats: <code>.txt</code>, <code>.md</code>, <code>.html</code>, <code>.htm</code>, <code>.pdf</code>.
+                Files are stored in <code>uploads/</code> and indexed into <code>data/</code>.
+              </div>
+            </div>
+          </div>
+          <form method="post" action="/upload" enctype="multipart/form-data">
+            <input type="file" name="files" multiple accept=".txt,.md,.html,.htm,.pdf">
+            <button type="submit">Upload File</button>
+          </form>
+          <div class="hint">Upload one or more files, then ask questions against indexed content.</div>
+          {% if state.saved_files %}
+          <div class="label">Uploaded Files</div>
+          <div class="result">
+            <ol>
+              {% for file in state.saved_files %}
+              <li><span class="mono">{{ file }}</span></li>
+              {% endfor %}
+            </ol>
+          </div>
+          {% endif %}
+        </article>
+
+        <article class="card">
+          <h2>2) Ask Question</h2>
+          <form method="post" action="/ask">
+            <input type="text" name="question" placeholder="What are the key features?" required>
+            <input type="number" name="top_k" value="1" min="1" max="10" placeholder="Chunk size">
+            <button type="submit">Ask</button>
+          </form>
+        </article>
+
+        <article class="card">
+          <h2>3) Write Memory</h2>
+          <form method="post" action="/remember">
+            <textarea name="text" rows="4" placeholder="I'm a Project Finance Analyst." required></textarea>
+            <button type="submit">Remember</button>
+          </form>
+        </article>
+      </section>
+
+      {% if state.question or state.memory_text %}
+      <section class="card latest">
+        <h2>Latest Result</h2>
+        {% if state.question %}
+        <div class="label">Question</div>
+        <div class="result">{{ state.question }}</div>
+        <div class="label">Answer</div>
+        <div class="result">{{ state.answer }}</div>
+        <div class="label">Mode</div>
+        <div class="result">{{ state.mode }}</div>
+        <div class="label">Retrieval Summary</div>
+        <div class="result">
+          <div>Requested chunks: {{ state.top_k }}</div>
+          <div>Returned chunks: {{ state.returned_k }}</div>
+          <div>Total indexed chunks: {{ state.total_chunks_indexed }}</div>
+          {% if state.best_chunk %}
+          <div>Best chunk: {{ state.best_chunk.locator }}</div>
+          <div>Best source: {{ state.best_chunk.source }}</div>
+          <div>Best score: {{ state.best_chunk.score }}</div>
+          {% endif %}
+        </div>
+        <div class="label">Citations</div>
+        <div class="result">
+          {% if state.citations %}
+          <ol>
+            {% for c in state.citations %}
+            <li>
+              <div><span class="mono">{{ c.source }}</span> | <span class="mono">{{ c.locator }}</span></div>
+              <div>Snippet: {{ c.snippet }}</div>
+            </li>
+            {% endfor %}
+          </ol>
+          {% else %}
+          No citations returned.
+          {% endif %}
+        </div>
+        {% endif %}
+
+        {% if state.memory_text %}
+        <div class="label">Memory Input</div>
+        <div class="result">{{ state.memory_text }}</div>
+        <div class="label">Decision</div>
+        <div class="result">
+          <div>Should write: {{ state.decision.should_write }}</div>
+          <div>Target: {{ state.decision.target }}</div>
+          <div>Summary: {{ state.decision.summary or "N/A" }}</div>
+          <div>Confidence: {{ state.decision.confidence }}</div>
+        </div>
+        <div class="label">Write Result</div>
+        <div class="result">
+          <div>Written: {{ state.write_result.written }}</div>
+          <div>Target: {{ state.write_result.target }}</div>
+          <div>Summary: {{ state.write_result.summary or "N/A" }}</div>
+        </div>
+        {% endif %}
+      </section>
+      {% endif %}
+    </div>
+  </main>
+</body>
+</html>

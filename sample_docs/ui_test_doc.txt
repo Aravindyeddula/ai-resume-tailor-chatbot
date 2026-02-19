@@ -1,0 +1,18 @@
+AI Project: Customer Support Copilot
+
+Overview:
+This document describes a pilot AI assistant for customer support teams.
+
+Main contribution:
+The pilot introduced a retrieval-augmented assistant that reduced average first-response time from 14 minutes to 8 minutes during a 4-week trial.
+
+Assumptions:
+Support articles are updated weekly and written in English.
+At least one human reviewer checks high-risk responses.
+
+Limitations:
+The assistant performs poorly on topics not covered in the knowledge base and may miss intent when users use slang.
+
+Concrete numeric detail:
+In week 3, the team processed 1,240 tickets and resolved 71% without escalation.
+
