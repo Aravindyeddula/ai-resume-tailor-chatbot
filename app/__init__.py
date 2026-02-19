@@ -1,2 +1,1 @@
-"""Agentic RAG chatbot package."""
-
+# Package marker.

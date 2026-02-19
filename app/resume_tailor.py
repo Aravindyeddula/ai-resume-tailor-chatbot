@@ -4,35 +4,56 @@ import os
 import re
 import urllib.request
 from collections import Counter
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Dict, List, Tuple
 
-from .ingest import _read_supported_file  # Reuse parser for txt/md/html/pdf.
-
 
 TOKEN_RE = re.compile(r"[A-Za-z][A-Za-z0-9+#./-]{1,}")
-STOPWORDS = {
-    "a",
-    "an",
-    "and",
-    "are",
-    "as",
-    "at",
-    "be",
-    "by",
-    "for",
-    "from",
-    "in",
-    "is",
-    "it",
-    "of",
-    "on",
-    "or",
-    "that",
-    "the",
-    "to",
-    "with",
-}
+STOPWORDS = {"a", "an", "and", "are", "as", "at", "be", "by", "for", "from", "in", "is", "it", "of", "on", "or", "that", "the", "to", "with"}
+
+
+class _SimpleHTMLTextExtractor(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.parts: List[str] = []
+
+    def handle_data(self, data: str) -> None:
+        text = data.strip()
+        if text:
+            self.parts.append(text)
+
+    def get_text(self) -> str:
+        return "\n".join(self.parts)
+
+
+def _read_file(path: Path) -> str:
+    ext = path.suffix.lower()
+    if ext in {".txt", ".md"}:
+        return path.read_text(encoding="utf-8", errors="ignore")
+    if ext in {".html", ".htm"}:
+        parser = _SimpleHTMLTextExtractor()
+        parser.feed(path.read_text(encoding="utf-8", errors="ignore"))
+        return html.unescape(parser.get_text())
+    if ext == ".pdf":
+        try:
+            from pypdf import PdfReader  # type: ignore
+        except Exception:
+            return ""
+        try:
+            reader = PdfReader(str(path))
+        except Exception:
+            return ""
+        parts: List[str] = []
+        for page in reader.pages:
+            try:
+                text = page.extract_text() or ""
+            except Exception:
+                text = ""
+            if text.strip():
+                parts.append(text.strip())
+        return "\n\n".join(parts)
+    return ""
 
 
 def _tokenize(text: str) -> List[str]:
@@ -44,54 +65,14 @@ def _extract_keywords(text: str, top_n: int = 20) -> List[str]:
     return [w for w, _ in counts.most_common(top_n)]
 
 
-def _infer_heading_prefix(resume_text: str) -> str:
-    for line in resume_text.splitlines():
-        stripped = line.strip()
-        if not stripped:
-            continue
-        if stripped.startswith("## "):
-            return "## "
-        if stripped.startswith("# "):
-            return "# "
-    return ""
-
-
-def _infer_bullet_prefix(resume_text: str) -> str:
-    for line in resume_text.splitlines():
-        stripped = line.strip()
-        if stripped.startswith("- "):
-            return "- "
-        if stripped.startswith("* "):
-            return "* "
-    return "- "
-
-
-def _heuristic_tailor(resume_text: str, jd_text: str) -> Tuple[str, List[str]]:
-    jd_keywords = _extract_keywords(jd_text, top_n=25)
-    resume_tokens = set(_tokenize(resume_text))
-    missing = [k for k in jd_keywords if k not in resume_tokens][:8]
-    if not missing:
-        return resume_text, ["Resume already covers key JD terms."]
-
-    heading_prefix = _infer_heading_prefix(resume_text)
-    bullet_prefix = _infer_bullet_prefix(resume_text)
-    add_header = f"{heading_prefix}Targeted JD Alignment".strip()
-    lines = [resume_text.rstrip(), "", add_header]
-    for kw in missing:
-        lines.append(f"{bullet_prefix}{kw}")
-    updated = "\n".join(lines).strip() + "\n"
-    summary = [f"Added {len(missing)} JD-alignment keywords in a dedicated section."]
-    return updated, summary
-
-
 def _extract_json_object(text: str) -> Dict[str, object]:
     text = text.strip()
     if not text:
         return {}
     try:
-        data = json.loads(text)
-        if isinstance(data, dict):
-            return data
+        parsed = json.loads(text)
+        if isinstance(parsed, dict):
+            return parsed
     except Exception:
         pass
     start = text.find("{")
@@ -99,38 +80,39 @@ def _extract_json_object(text: str) -> Dict[str, object]:
     if start < 0 or end <= start:
         return {}
     try:
-        data = json.loads(text[start : end + 1])
-        if isinstance(data, dict):
-            return data
+        parsed = json.loads(text[start : end + 1])
+        if isinstance(parsed, dict):
+            return parsed
     except Exception:
         return {}
     return {}
 
 
-def _openai_tailor(resume_text: str, jd_text: str, model: str = "gpt-4.1-mini") -> Tuple[str, List[str], str]:
+def _heuristic_tailor(resume_text: str, jd_text: str) -> Tuple[str, List[str]]:
+    jd_keywords = _extract_keywords(jd_text, top_n=20)
+    resume_tokens = set(_tokenize(resume_text))
+    missing = [k for k in jd_keywords if k not in resume_tokens][:8]
+    if not missing:
+        return resume_text, ["Resume already covers major JD keywords."]
+    tailored = f"{resume_text.rstrip()}\n\nTargeted JD Alignment\n- " + "\n- ".join(missing) + "\n"
+    return tailored, [f"Added {len(missing)} JD keywords."]
+
+
+def _openai_tailor(resume_text: str, jd_text: str) -> Tuple[str, List[str], str]:
     api_key = os.getenv("OPENAI_API_KEY", "").strip()
     if not api_key:
         raise RuntimeError("OPENAI_API_KEY not set")
-
     payload = {
-        "model": model,
+        "model": "gpt-4.1-mini",
         "input": [
             {
                 "role": "system",
                 "content": (
-                    "You are an expert resume editor. Rewrite the resume for the target JD while preserving "
-                    "the original structure style, section order, and concise tone. Do not invent degrees, "
-                    "companies, titles, dates, certifications, or years of experience. Improve bullets for ATS "
-                    "matching using only plausible reframing from existing resume evidence."
+                    "Rewrite the resume for the provided JD while preserving section order and style. "
+                    "Do not invent facts. Return strict JSON with tailored_resume, change_summary (array), notes."
                 ),
             },
-            {
-                "role": "user",
-                "content": (
-                    "Return STRICT JSON with keys: tailored_resume (string), change_summary (array of strings), notes (string).\n\n"
-                    f"RESUME:\n{resume_text}\n\nJOB_DESCRIPTION:\n{jd_text}"
-                ),
-            },
+            {"role": "user", "content": f"RESUME:\n{resume_text}\n\nJOB_DESCRIPTION:\n{jd_text}"},
         ],
     }
     req = urllib.request.Request(
@@ -142,37 +124,32 @@ def _openai_tailor(resume_text: str, jd_text: str, model: str = "gpt-4.1-mini") 
     with urllib.request.urlopen(req, timeout=60) as resp:
         body = json.loads(resp.read().decode("utf-8"))
 
-    text = str(body.get("output_text", "")).strip()
-    parsed = _extract_json_object(text)
+    parsed = _extract_json_object(str(body.get("output_text", "")))
     if not parsed:
-        all_parts: List[str] = []
+        fragments: List[str] = []
         for item in body.get("output", []):
             for content in item.get("content", []):
                 if content.get("type") == "output_text" and content.get("text"):
-                    all_parts.append(str(content["text"]))
-        parsed = _extract_json_object("\n".join(all_parts))
+                    fragments.append(str(content["text"]))
+        parsed = _extract_json_object("\n".join(fragments))
     if not parsed:
         raise ValueError("Could not parse model output")
 
     tailored = str(parsed.get("tailored_resume", "")).strip()
-    change_summary = parsed.get("change_summary", [])
-    if isinstance(change_summary, list):
-        summary = [str(x).strip() for x in change_summary if str(x).strip()]
-    else:
-        summary = []
-    notes = str(parsed.get("notes", "")).strip()
     if not tailored:
-        raise ValueError("Model returned empty tailored_resume")
+        raise ValueError("Model returned empty tailored resume")
+    raw_summary = parsed.get("change_summary", [])
+    summary = [str(x).strip() for x in raw_summary] if isinstance(raw_summary, list) else []
+    notes = str(parsed.get("notes", "")).strip()
     return tailored, summary, notes
 
 
 def _render_html_document(text: str) -> str:
-    escaped = html.escape(text)
     return (
-        "<!doctype html>\n"
-        "<html><head><meta charset='utf-8'><title>Tailored Resume</title></head>"
-        "<body><pre style='font-family:Arial,Helvetica,sans-serif;white-space:pre-wrap;'>"
-        f"{escaped}</pre></body></html>\n"
+        "<!doctype html><html><head><meta charset='utf-8'><title>Tailored Resume</title></head>"
+        "<body><pre style='white-space:pre-wrap;'>"
+        + html.escape(text)
+        + "</pre></body></html>\n"
     )
 
 
@@ -186,7 +163,6 @@ def _write_output(text: str, output_dir: Path, stem: str, ext: str) -> Tuple[Pat
         out = output_dir / f"{stem}_tailored{ext}"
         out.write_text(_render_html_document(text), encoding="utf-8")
         return out, ext
-    # PDF output generation is intentionally downgraded unless a PDF writer dependency is added.
     out = output_dir / f"{stem}_tailored.txt"
     out.write_text(text, encoding="utf-8")
     return out, ".txt"
@@ -200,35 +176,26 @@ def tailor_resume(resume_path: str, jd_path: str, output_dir: str = "artifacts")
     if not jd_file.exists():
         return {"ok": False, "error": f"JD file not found: {jd_file.as_posix()}"}
 
-    resume_text = _read_supported_file(resume_file).strip()
-    jd_text = _read_supported_file(jd_file).strip()
+    resume_text = _read_file(resume_file).strip()
+    jd_text = _read_file(jd_file).strip()
     if not resume_text:
-        return {"ok": False, "error": "Could not extract resume text from uploaded file."}
+        return {"ok": False, "error": "Could not extract resume text."}
     if not jd_text:
-        return {"ok": False, "error": "Could not extract job description text from uploaded file."}
+        return {"ok": False, "error": "Could not extract JD text."}
 
     mode = "heuristic"
     notes = ""
-    summary: List[str] = []
     try:
-        tailored, summary, notes = _openai_tailor(resume_text=resume_text, jd_text=jd_text)
+        tailored, summary, notes = _openai_tailor(resume_text, jd_text)
         mode = "openai"
     except Exception as e:
-        tailored, summary = _heuristic_tailor(resume_text=resume_text, jd_text=jd_text)
-        notes = f"Used heuristic fallback: {e}"
+        tailored, summary = _heuristic_tailor(resume_text, jd_text)
+        notes = f"Fallback used: {e}"
 
-    output_path, output_ext = _write_output(
-        text=tailored,
-        output_dir=Path(output_dir),
-        stem=resume_file.stem,
-        ext=resume_file.suffix.lower(),
-    )
-
+    output_path, output_ext = _write_output(tailored, Path(output_dir), resume_file.stem, resume_file.suffix.lower())
     return {
         "ok": True,
         "mode": mode,
-        "resume_source": resume_file.as_posix(),
-        "jd_source": jd_file.as_posix(),
         "output_path": output_path.as_posix(),
         "output_ext": output_ext,
         "format_preserved": output_ext == resume_file.suffix.lower(),
