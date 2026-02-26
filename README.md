@@ -31,6 +31,20 @@ streamlit run streamlit_app.py
 4. Click `Generate Tailored Resume`.
 5. Download the tailored output.
 
+## LaTeX Template Output (New)
+
+- Upload a resume and paste the JD text (same inputs).
+- Click `Generate LaTeX Resume (.tex)`.
+- The app extracts roles/responsibilities and renders a LaTeX resume in the `resume.cls` style.
+- Output files are written to `artifacts/latex/`:
+  - `<resume_name>_templated.tex`
+  - `resume.cls`
+  - `resume_faangpath.tex` (reference template you provided)
+
+Template assets copied into project:
+- `templates/latex/resume.cls`
+- `templates/latex/resume_faangpath.tex`
+
 Output format follows the uploaded resume extension when supported.  
 If a writer dependency is missing, app falls back to `.txt`.
 
@@ -39,3 +53,4 @@ Notes:
 - Heuristic mode now always adds a visible `Targeted JD Alignment` section so output is not identical to input.
 - For `.docx`, the app reuses the uploaded document structure to preserve heading/font styles.
 - For `.pdf`, the app now generates a tailored-only PDF using the original page size and style cues.
+- For LaTeX mode, OpenAI is recommended for better section extraction from PDF text.

@@ -1,0 +1,186 @@
+\documentclass{resume} % Use the custom resume.cls style
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[left=0.3in,top=0.15in,right=0.5in,bottom=0.2in]{geometry} % Document margins
+\usepackage{hyperref}
+\newcommand{\tab}[1]{\hspace{.2667\textwidth}\rlap{#1}} 
+\newcommand{\itab}[1]{\hspace{0em}\rlap{#1}}
+\name{Lavan Chukka}  % Your name 
+% You can merge both of these into a single line, if you do not have a website.
+\address{(720) 335-8657  $|$  New Haven,CT  $|$ 
+\href{mailto:lavanus98@gmail.com}{lavanus98@gmail.com}  $|$ 
+\textbf{\href{https://github.com/lavanchukka}{GitHub}}  $|$ 
+\href{https://www.linkedin.com/in/lavanchukka/}{Linkedin} }
+
+\begin{document}
+\small
+\vspace{-1em}
+\begin{rSection}{TECHNICAL SKILLS}
+\vspace{-1em}
+
+\textit{\textbf{Azure}}: Azure Data Factory $|$ Synapse Analytics $|$ EventHub’s $|$ ADLS $|$ Logic Apps $|$ Azure Monitor $|$ Linked services $|$ Key Vault $|$ IR. \\
+{\bf MS Fabric}: Lakehouse $|$ Event house $|$ Eventstream $|$ Data warehouse $|$ Notebooks $|$ Shortcuts $|$ Mirroring $|$ Activator $|$ Dataflows Gen2 $|$ Data Pipelines $|$ Medallion Architecture\\
+{\bf Databricks}: Spark streaming $|$ Delta tables $|$ Lakeflow Declarative Pipelines $|$ DAB’s $|$ Auto CDC $|$ CDF $|$ SCD's $|$ ETL flows $|$ Quality Management $|$ Advanced Optimization $|$ Unity Catalog  \\
+{\bf Programming}: Python $|$ SQL $|$ Pyspark $|$ KQL $|$ Spark SQL $|$ T-SQL $|$ DAX. \\
+%{\bf Real-time Analytics}: Kafka $|$ Fabric Event House $|$ Event Streams $|$ EventHub’s.\\
+{\bf Other Analytics Tools}: Kafka $|$ Dbt $|$ Docker \\
+{\bf Orchestration}: Fabric Deployment Pipelines $|$ Databricks Declarative Pipelines $|$ Airflow. \\
+{\bf Data Warehouse}: Snowflake $|$ SQL Server $|$ SAP $|$ Postgres.\\
+{\bf Data Visualization}: Power BI $|$ Tableau $|$ Looker $|$ MicroStrategy.\\
+%{\bf Versioning (CI/CD)}: Databricks Asset Bundles $|$ GitHub. \\
+%{\bf Containerization}: Docker.
+\end{rSection}
+
+\vspace{-21pt}
+\begin{rSection}{CERTIFICATIONS}
+\vspace{-1em}
+{{Microsoft Fabric Data Engineer} \href{https://learn.microsoft.com/en-us/users/chukkalavankumargoud-0967/credentials/343640923e3e2c2d?ref=https%3A%2F%2Fgithub.com%2F}{(Verify)} $|$ {Microsoft Fabric Analytics Engineer} \href{https://learn.microsoft.com/en-us/users/chukkalavankumargoud-0967/credentials/ad17a4a856dcc0ab?ref=https%3A%2F%2Fgithub.com%2F}{(Verify)} $|$ Databricks Certified Data Engineer Professional $|$ {AWS Certified Cloud Practitioner} \href{https://www.credly.com/badges/335e9c42-de0a-4215-803f-733e630c66d6?source=linked_in_profile%0A}{(Verify)} }
+\end{rSection}
+
+
+
+
+% ---------------------------------------------------------------------------------------PROJECTS-----------------------------------------------------------------------------------
+
+\vspace{-10pt}
+%\begin{rSection}{PROJECTS \small (Click on project title to view full repo)}
+
+\begin{rSection}{PROJECTS \MakeLowercase{\normalfont\mbox{(Click on project titles to view project repo)}}}
+\vspace{-10pt}
+{\href{https://github.com/lavanchukka/Sales-Deals-End2End-Azure-Project}{Sales Deals End2End Azure Project}} \textbf{\footnotesize{(Synapse Analytics $|$ Azure Data Factory $|$ Databricks $|$ Datalake)}}
+\vspace{-3pt}
+\begin{itemize}
+\itemsep -2pt {}
+\item Moved on premise data into cloud using data factory \& IR \& store the data in ADLS as central data repository. \item Improved reliability using Azure logic apps \& Azure monitor for tracking, performed cleaning \& transformations in data bricks, analyzed data with synapse analytics \& implemented security using Azure Key vault \& secret scope .
+
+\end{itemize}
+
+{\href{https://github.com/lavanchukka/NYC-Taxi-Trips-MS-Fabric-Project}{NYC Taxi Trips MS Fabric Project}} \textbf{\footnotesize {(Lakehouse $|$ Data Warehouse $|$ Event Streams $|$ Pipelines $|$ Dataflows Gen2 $|$ Semantic Models) 
+}}
+\vspace{-2pt}
+\begin{itemize}
+\itemsep -2pt {}
+\item Implemented the movement of NYC Taxi Trips raw data, (nyc.gov) starting from landing data into fabric lakehouse, used pipelines, stored procedures \& dataflows gen2 to transform \& to orchestrate staging \& presentation layers.
+\item Created semantic models \& visualizations using cleaned, transformed data from data warehouse presentation layer.
+\end{itemize}
+
+{\href{https://github.com/lavanchukka/USGS-Earthquake-Events-Medallion-Fabric-Project}{USGS Earthquake Events Medallion MS Fabric Project}} \textbf{\footnotesize{(Lakehouse $|$ PySpark $|$ APIs $|$ Notebooks $|$ Semantic Models $|$ PowerBI)}}
+\vspace{-3pt}
+\begin{itemize}
+\itemsep -2pt {}
+\item Implemented medallion architecture using USGS API data and orchestrated data movement from bronze, silver to gold layer transforming data using python fetch, data factory and notebooks.
+\end{itemize}
+
+{\href{https://github.com/lavanchukka/Airbnb-Azure-End2End-Project}{Airbnb End2End Azure Project}} \textbf{\footnotesize{(Data Factory $|$ ADLS $|$ Synapse Databricks $|$ PySpark $|$ PowerBI)}}
+\vspace{-3pt}
+\begin{itemize}
+\itemsep -2pt {}
+\item Ingested raw data using data factory \& stored it in ADLS(as bronze container) \& connected it to data bricks to perform transformations using Pyspark \& loaded transformed data into silver container.
+\item Used synapse analytics to create schema, tables \& ingested this data into gold container.
+
+\end{itemize}
+
+{\href{https://github.com/lavanchukka/SQL-Data-Warehouse-Medallion-Project}{SQL Data Warehouse Medallion Architecture Project}} \textbf{\footnotesize{(SQL Server $|$ Star Schema $|$ Stored Procedure $|$ Views)}}
+\vspace{-3pt}
+\begin{itemize}
+\itemsep -2pt {}
+\item Implemented modern data warehouse on sales data using medallion architecture, Views, SP's, \& data modeling using star schema.
+\end{itemize}
+
+%{\href{https://github.com/lavanchukka/PowerBI-Portfolio-Dashboard}{PowerBI Portfolio Dashboard Project}} (Power Query $|$ DAX $|$ Snowflake Schema $|$ Data Modelling)
+%\begin{itemize}
+%\itemsep -2pt {}
+%\item 
+%\item
+%\end{itemize}
+
+\end{rSection}
+
+
+
+%-----------------------EXPERIENCE-----------------------------------------------------------------------
+
+\vspace{-10pt}
+\begin{rSection}{EXPERIENCE}
+\vspace{-1em}
+\textbf{National Railroad Passenger Corporation (Amtrak)}  \\
+\vspace{-1.3em}
+\textit{{Senior Project Business Analyst}} \hfill{June 2022 - Present} \\
+\vspace{-3pt}
+\begin{itemize}
+\itemsep -1pt {} 
+\item Created PowerBI dashboard for New England portfolio to track metrics like Budgets, Production units, Purchase orders, TDR's, Labor hours and charges by pulling and creating data flows from 8 different data sources.
+\item Pilot tested real time safety incident reporting by collecting MS forms data, power automate, \& streaming data into fabric eventstream, load, taransform \& sink data into event house, KQL database and visualize data using PowerBI.
+\item Collaborated with managers for creation of project charters, scope, project management plan, tracking milestones, monitoring analytics and change requests for 10 different programs totaling \$70-90M annual budget.
+\item Built PowerBI Safety Dashboard to track safety plans and other KPIs for 10 programs and 11 projects which is essential
+for safety of employees and uninterrupted operations.
+\item Created \& organized SharePoint site for New England division to support portfolio data migration from S drive to SharePoint.
+%\item Performed risk assessments and developed mitigation plans to minimize the impact and ensured safety and environmental compliance as per federal regulations.
+%\item Initiated the use of MS forms for the intake of safety plan/data to reduce data silos and communication jargon.
+%\item Collaborated with payroll team to collect employee TDR data and created charts to track the monthly progress which helped reach the annual target of 70\%.
+\item Leading the on-going creation of 5-year Asset planning to make efficient use of budgets, labor forces and to maintain SOGR. \\
+\end{itemize}
+
+\vspace{-13pt}
+\textit{{Business Analyst Intern}} \hfill{Sept 2021 - Dec 2021}
+\vspace{-4pt}
+\begin{itemize}
+\itemsep -2.5pt {} 
+\item First prize winner in Amtrak Business Hackathon.
+\item Analyzed business operations and led Learning and Development team in adopting Monday.com CRM software, and collaborated with workforce analytics team to create PowerBI dashboard for the learning and management systems
+team, also created Power App to keep track of inventory.
+\end{itemize}
+ 
+\textbf{University of Colorado, Denver - Business School}\\
+\textit{{Teaching Assistant – Business Intelligence in Financial Modelling}} \hfill{Feb 2021 - June 2023} \\
+\vspace{-15pt}
+\begin{itemize} 
+\itemsep -2pt {}
+\item Assisted in teaching \& creating curriculum for labs on financial analysis, forecasting, and data visualization using Python (Pandas, NumPy), indicators like (SMA, EMA, MACD), Excel, Power BI, and Tableau; mentored 10 project teams and supported class of 26 students through weekly guidance sessions and evaluations.
+
+%\item Assisted in labs teaching financial analysis and visualization story telling using pandas, NumPy, SMA, EMA, MACD, PowerBI, Tableau and Supervised the projects of 10 teams and guided them every week.
+%\item Taught Forecasting Methods, analyzing graphs, excel functions and evaluated exams, assignments and conducted weekly doubt sessions for a class of 26 students.
+% \item Improved reliability and deployment efficiency by adopting TDD, automating tests, and integrating CI/CD pipelines with Git and GitHub, ensuring seamless version control and faster release cycles
+% \item Led and mentored junior engineers and interns, streamlining onboarding, fostering a collaborative engineering culture, and promoting peer-to-peer learning within the development team
+ \end{itemize}
+ 
+% \textit{Software Development Engineer Intern} \hfill 
+%\begin{itemize}
+%\itemsep -2pt {} 
+%\item Built custom, reusable UI components (buttons, loaders, breadcrumbs, scrollbars) using JavaScript, React.js, and CSS, promoting consistent design and reducing duplicate development efforts
+%\item Worked in Agile sprints with daily stand-ups and sprint planning sessions; used JIRA to track deliverables and contribute to feature rollouts
+%\end{itemize}
+
+\end{rSection} 
+
+
+
+%----------------------------------------------------------------------------------------
+% TECHINICAL STRENGTHS    
+%----------------------------------------------------------------------------------------
+
+%\vspace{-1em}
+%\begin{rSection}{SKILLS AND CERTIFICATIONS}
+%\vspace{-0.5em}
+%\begin{tabular}{ @{} >{\bfseries}l @{\hspace{1ex}} p{0.8\textwidth} @{} }
+%SKILLS & Agile/Scrum $|$ Product Planning $|$ Risk Mitigation $|$ Collaboration $|$ Process Documentation $|$ Product Analytics $|$ KPI Definition $|$ Feature Usage Tracking $|$ User Behavior Analysis $|$ A/B Testing $|$ ETL/ELT $|$ Data Visualization $|$ Statistical Analysis $|$ SDLC \\
+%TECH STACK & Python $|$ SQL $|$ BigQuery $|$ PostgreSQL $|$ NoSQL $|$ Pandas $|$ NumPy $|$ Pytest $|$ TypeScript $|$ JavaScript $|$ React $|$ Airflow $|$ Redis $|$ Docker $|$ Power BI $|$ Tableau $|$ Excel (Power Query, Pivot Tables) $|$ Git $|$ GitHub \\
+%CERTIFICATIONS & Introduction to MCP (Anthropic) $|$ Supply Chain Foundations Analytics (LinkedIn) $|$ Advanced Analytics Engineering (LinkedIn) $|$ Introduction to TensorFlow for Artificial Intelligence, Machine Learning and Deep Learning (Coursera) $|$ Neural Networks and Deep Learning (Coursera) $|$ Python for Data Science (NPTEL) \\
+
+%\end{tabular}
+
+%\end{rSection}
+
+\vspace{-1em}
+\begin{rSection}{Education}
+\vspace{-9pt}
+{\bf Masters in Management and Information Systems (Business Intelligence)}, University of Colorado, Denver \hfill {
+Dec 2021}\\
+Data Warehouse Administration, Cloud Computing Concepts, Data Analytics for Managers, Business Intelligence \& Analytics, DBMS.
+
+{\bf Bachelor in Electronics and Communications Engineering}, SRM Institute of Science and Technology \hfill {May 2019}
+%Data Structures \& Applications, Statistics, Data Mining, OOP, Algorithms, OS, Computer Architecture
+
+
+\end{rSection}
+
+\end{document}
