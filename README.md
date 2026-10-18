@@ -1,56 +1,126 @@
-# AI Resume Builder
+# AI Resume Tailor
 
-Simple Streamlit app to tailor a resume against a job description.
+A Python and Streamlit prototype that takes a resume and a job description, generates tailored text, and exports a document or LaTeX source.
 
-## Setup
+The project combines LLM integration with document parsing and output generation. It currently runs locally and supports an OpenAI-backed mode and a heuristic fallback.
 
-```powershell
-cd c:\Users\aravi\ai-resume-tailor-chatbot
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+## Features
+
+- Upload PDF, DOCX, TXT, Markdown, or HTML resumes.
+- Paste a target job description in the Streamlit interface.
+- Request an OpenAI rewrite and view a change summary.
+- Generate output in the input format where supported, with a text fallback when a writer is unavailable.
+- Generate LaTeX source with the bundled `resume.cls` template.
+- View which generation mode was used.
+
+## Architecture
+
+```text
+Resume upload + job description
+              |
+        Streamlit interface
+              |
+        Document text extraction
+              |
+    +---------+------------------+
+    |                            |
+Resume tailoring           Structured extraction
+    |                            |
+OpenAI / heuristic         OpenAI / heuristic
+    |                            |
+Document writer            LaTeX renderer
+    |                            |
+artifacts/                 artifacts/latex/
 ```
 
-Optional (better rewrite quality):
+| File | Responsibility |
+| --- | --- |
+| [streamlit_app.py](streamlit_app.py) | Uploads, job-description input, generation controls, and downloads |
+| [app/resume_tailor.py](app/resume_tailor.py) | Text extraction, OpenAI calls, heuristic tailoring, and document writers |
+| [app/latex_resume.py](app/latex_resume.py) | Structured extraction and LaTeX rendering |
+| [templates/latex/](templates/latex/) | Resume class and reference template |
+| [requirements.txt](requirements.txt) | Pinned application dependencies |
+
+The OpenAI calls use Python's standard-library HTTP client; the OpenAI Python SDK is not required.
+
+## Run locally
+
+Clone the repository and create a virtual environment:
+
+```bash
+git clone https://github.com/Aravindyeddula/ai-resume-tailor-chatbot.git
+cd ai-resume-tailor-chatbot
+python -m venv .venv
+```
+
+Activate the environment:
 
 ```powershell
+# Windows PowerShell
+.\.venv\Scripts\Activate.ps1
+```
+
+```bash
+# macOS / Linux
+source .venv/bin/activate
+```
+
+Install dependencies:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+For OpenAI mode, set the API key in the same terminal before starting Streamlit:
+
+```powershell
+# Windows PowerShell
 $env:OPENAI_API_KEY="your_api_key_here"
 ```
 
-## Run
+```bash
+# macOS / Linux
+export OPENAI_API_KEY="your_api_key_here"
+```
 
-```powershell
+Start the application:
+
+```bash
 streamlit run streamlit_app.py
 ```
 
-## How It Works
+## Use the application
 
-1. Upload your resume file from local system (`.pdf`, `.docx`, `.txt`, `.md`, `.html`, `.htm`).
-2. Paste the target JD text in the job description box.
-3. Keep `Require OpenAI rewrite` enabled if you want strict model-based tailoring.
-4. Click `Generate Tailored Resume`.
-5. Download the tailored output.
+1. Upload a resume and paste a job description.
+2. Keep **Require OpenAI rewrite** enabled to request model-backed output. An API key is required.
+3. Select **Generate Tailored Resume** or **Generate LaTeX Resume (.tex)**.
+4. Check the reported mode, change summary, and generated document before downloading.
 
-## LaTeX Template Output (New)
+To explore the heuristic fallback without an API key, turn off **Require OpenAI rewrite**. If model generation fails while the checkbox is enabled, the interface reports the fallback instead of presenting it as an OpenAI result.
 
-- Upload a resume and paste the JD text (same inputs).
-- Click `Generate LaTeX Resume (.tex)`.
-- The app extracts roles/responsibilities and renders a LaTeX resume in the `resume.cls` style.
-- Output files are written to `artifacts/latex/`:
-  - `<resume_name>_templated.tex`
-  - `resume.cls`
-  - `resume_faangpath.tex` (reference template you provided)
+## Outputs and data handling
 
-Template assets copied into project:
-- `templates/latex/resume.cls`
-- `templates/latex/resume_faangpath.tex`
+- Uploaded files are saved under `uploads/`.
+- Tailored documents are written under `artifacts/`.
+- LaTeX output is written under `artifacts/latex/`, including the generated `.tex` file and copied template assets.
+- OpenAI mode sends extracted resume text and the job description to the OpenAI API.
+- The app does not automatically remove saved uploads or generated files.
 
-Output format follows the uploaded resume extension when supported.  
-If a writer dependency is missing, app falls back to `.txt`.
+The generated LaTeX source needs a separate LaTeX environment to compile into a PDF.
 
-Notes:
-- If `OPENAI_API_KEY` is missing/unavailable, app uses heuristic mode.
-- Heuristic mode now always adds a visible `Targeted JD Alignment` section so output is not identical to input.
-- For `.docx`, the app reuses the uploaded document structure to preserve heading/font styles.
-- For `.pdf`, the app now generates a tailored-only PDF using the original page size and style cues.
-- For LaTeX mode, OpenAI is recommended for better section extraction from PDF text.
+## Current scope and limitations
+
+This is a prototype. The repository does not yet include an automated test suite or a published evaluation benchmark.
+
+- PDF and DOCX layout preservation is best effort; compare the output with the original.
+- Heuristic mode uses templated summaries and keyword alignment. Its wording can introduce unsupported assumptions; review all generated claims.
+- OpenAI output also requires factual review. Missing job-description keywords do not establish that the applicant has those skills.
+- Scanned or image-only PDFs may not yield usable text because there is no dedicated OCR pipeline.
+- No ATS score, hiring outcome, or factuality guarantee is claimed.
+
+## Next improvements
+
+- Add synthetic resume and job-description fixtures with factuality and export checks.
+- Measure generation latency, API usage, and document-format success rates.
+- Improve upload isolation and cleanup before considering a shared deployment.
+- Add a short demo using synthetic personal information.
